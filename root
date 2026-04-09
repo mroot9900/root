@@ -1,0 +1,269 @@
+########## Working with docker,Docker commands,Docker Images and Container #####
+docker run hello-world
+docker pull nginx
+docker run -d -p nginx
+docker ps
+docker images
+docker stop 
+docker volume create MyVolum
+docker run -d --name webApp4 --mount source=MyVolume,destination=/usr/share/nginx/html -p 81:80 nginx
+
+
+########### Working with Docker Swarm. ############# 
+docker swarm init
+docker info
+docker service create --replicas 1 --name hellowworld alpine ping docker.com
+docker service ls
+docker service ps hellowworld
+docker service create --name webserver --publish 8080:80 nginx
+docker service scale webserver=3
+docker service ps webserver
+docker service rm webserver
+docker service inspect webserver
+
+
+########Installing software packages on Docker, Working with Docker Volumes and Networks. ########
+
+docker pull nginx
+docker run -d --name webApp -p 80:80 nginx
+http://localhost or 127.0.0.1
+docker exec -it webApp bash
+cd /usr/share/nginx/html 
+echo "Hello Docker Volume" > index.html
+exit 
+Refresh browser → content updated
+docker stop webApp 
+docker run -d --name webApp2 -p 80:80 nginx
+docker volume create MyVolume
+docker run -d --name webApp3 --mount source=MyVolume,destination=/usr/share/nginx/html -p 81:80 nginx
+
+docker exec -it webApp3 bash
+cd /usr/share/nginx/html
+echo "Persistent Data using Volume" > index.html
+exit
+
+docker stop webApp3
+docker run -d --name webApp5 --mount source=MyVolume,destination=/usr/share/nginx/html -p 81:80 nginx
+docker ps
+docker network create mynetwork
+docker network ls
+docker run -dit --name container1 --network mynetwork ubuntu
+docker run -dit --name container2 --network mynetwork ubuntu
+docker exec -it container1 bash
+apt-get update
+apt-get install -y iputils-ping
+ping container2
+
+
+############### Working with Kubernetes #########################
+sudo snap install microk8s --classic
+sudo microk8s kubectl get all --all-namespaces
+sudo nano nginx.yaml
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+
+
+
+sudo nano nginx-service.yaml
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: NodePort
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30007
+
+
+sudo microk8s kubectl apply -f nginx.yaml
+sudo microk8s kubectl apply -f nginx-service.yaml
+sudo microk8s kubectl get pods
+sudo microk8s kubectl get services
+hostname -I
+172.17.2.36:30007
+
+
+
+//studentModel.cs -> add models
+[Required(ErrorMessage = "Student Roll Number is required.")]
+        public string RollNo { get; set; }
+
+        [Required(ErrorMessage = "Student First Name is required.")]
+        public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "Student Last Name is required.")]
+        public string LastName { get; set; }
+
+        [Required(ErrorMessage = "Student Address is required.")]
+        public string Address { get; set; }
+
+        [Required(ErrorMessage = "Student Class is required.")]
+        public string Class { get; set; }
+
+        [Required(ErrorMessage = "Student Age is required.")]
+        public string Age { get; set; }
+
+        [Required(ErrorMessage = "Student Contact Number is required.")]
+        public string ContactNumber { get; set; }
+
+
+//add controller -> StudentController.cs
+
+
+
+    public class StudentController : Controller
+    {
+	[HttpGet]
+        public ActionResult Student()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Student(studentModel obj)
+        {
+            if (ModelState.IsValid)
+            {
+                ViewBag.Txt1 = "Congratulations!!! You have been Registered Successfully!!!";
+                ViewBag.Txt2 = "Your Details are as follows:";
+                ViewBag.Txt3 = "Roll Number = " + obj.RollNo;
+                ViewBag.Txt4 = "Name = " + obj.FirstName + " " + obj.LastName;
+                ViewBag.Txt5 = "Class = " + obj.Class;
+                ViewBag.Txt6 = "Address = " + obj.Address;
+                ViewBag.Txt7 = "Age = " + obj.Age;
+                ViewBag.Txt8 = "Contact Number = " + obj.ContactNumber;
+                ViewBag.Txt9 = "Thank You! We'll Get Back to you soon.";
+            }
+
+            return View(obj);
+        }
+
+    }
+
+//Add view -> student
+
+@model practical02.Models.studentModel
+
+@{
+    ViewBag.Title = "Student";
+}
+<h2>Student Registration</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="form-horizontal">
+        <h4>Fill in the Student Details</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.RollNo, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.RollNo, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.RollNo, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.FirstName, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.LastName, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Address, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Class, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Class, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Class, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Age, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Age, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Age, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ContactNumber, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ContactNumber, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ContactNumber, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+        <hr />
+        <div class="col-md-offset-2 col-md-10 text-success">
+            <h3>@ViewBag.Txt1</h3>
+        </div>
+        <div class="col-md-offset-2 col-md-10">
+            <h4>@ViewBag.Txt2</h4>
+        </div>
+        <br />
+        <div class="col-md-offset-2 col-md-10">@ViewBag.Txt3</div>
+        <div class="col-md-offset-2 col-md-10">@ViewBag.Txt4</div>
+        <div class="col-md-offset-2 col-md-10">@ViewBag.Txt5</div>
+        <div class="col-md-offset-2 col-md-10">@ViewBag.Txt6</div>
+        <div class="col-md-offset-2 col-md-10">@ViewBag.Txt7</div>
+        <div class="col-md-offset-2 col-md-10">@ViewBag.Txt8</div>
+        <br />
+        <div class="col-md-offset-2 col-md-10 text-capitalize">
+            <h4>@ViewBag.Txt9</h4>
+        </div>
+    </div>
+}
+<div>
+    @Html.ActionLink("Back to List", "Student")
+</div>
+@section Scripts {
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+}
+
+
+
