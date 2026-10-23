@@ -1,0 +1,308 @@
+#####find s algorithms####
+data = [
+    ["Morning", "Sunny", "Warm", "Yes", "Mild", "Strong", "Yes"],
+    ["Evening", "Rainy", "Cold", "No", "Mild", "Normal", "No"],
+    ["Morning", "Sunny", "Moderate", "Yes", "Normal", "Normal", "Yes"],
+    ["Evening", "Sunny", "Cold", "Yes", "High", "Strong", "Yes"]
+]
+
+hypothesis = None
+for row in data:
+    attributes = row[:-1]
+    target = row[-1]
+
+    if target == "Yes":
+
+        if hypothesis is None:
+            hypothesis = attributes.copy()
+            print("Initial Hypothesis:", hypothesis)
+        else:
+            for i in range(len(attributes)):
+                if hypothesis[i] != attributes[i]:
+                    hypothesis[i] = "?"
+
+            print("Updated Hypothesis:", hypothesis)
+            
+print("\nFinal Hypothesis:", hypothesis)
+
+
+
+###### Candidate Elimination Algorithm #####
+data = [
+    ["Sunny", "Warm", "Normal", "Strong", "Warm", "Same", "Yes"],
+    ["Sunny", "Warm", "High",   "Strong", "Warm", "Same", "Yes"],
+    ["Rainy", "Cold", "High",   "Strong", "Warm", "Change", "No"],
+    ["Sunny", "Warm", "High",   "Strong", "Cool", "Change", "Yes"]
+]
+S = data[0][:-1].copy()
+G = [["?" for _ in range(len(S))]]
+for row in data:
+    features = row[:-1]
+    target = row[-1]
+    
+    if target == "Yes":
+        for i in range(len(S)):
+            if S[i] != features[i]:
+                S[i] = "?"    
+        G = [g for g in G if all(g[i] == "?" or g[i] == features[i] for i in range(len(S)))]
+        
+    else: 
+        new_G = []
+        for g in G:
+            for i in range(len(S)):
+                if g[i] == "?" and S[i] != "?" and S[i] != features[i]:
+                    specialized = g.copy()
+                    specialized[i] = S[i]
+                    new_G.append(specialized)
+        G = new_G
+print("Final S:", S)
+print("Final G:", G)
+
+
+##### Decision Tree and Random forest with Prediction, Test Score and Confusion Matrix ###
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+iris = load_iris()
+X = iris.data
+y = iris.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+dt = DecisionTreeClassifier(random_state=42)
+dt.fit(X_train, y_train)
+dt_prediction = dt.predict(X_test)
+dt_score = dt.score(X_test, y_test)
+dt_cm = confusion_matrix(y_test, dt_prediction)
+print("----- Decision Tree -----")
+print("Prediction:", dt_prediction)
+print("Test Score:", dt_score)
+print("Confusion Matrix:")
+print(dt_cm)
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf.fit(X_train, y_train)
+rf_prediction = rf.predict(X_test)
+rf_score = rf.score(X_test, y_test)
+rf_cm = confusion_matrix(y_test, rf_prediction)
+print("\n----- Random Forest -----")
+print("Prediction:", rf_prediction)
+print("Test Score:", rf_score)
+print("Confusion Matrix:")
+print(rf_cm)
+
+
+
+#### implement Least Square Regression algorithm. #####
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize'] = (12.0, 9.0)
+data = pd.read_csv(r'C\P04.csv')
+X = data['Age (x)'][:6]
+Y = data['Glucose level (y)'][:6]
+age = data['Age (x)'][6]
+# Plot initial scatter plot
+plt.scatter(X, Y)
+plt.xlabel('Age')
+plt.ylabel('Glucose Level')
+plt.title('Age vs Glucose Level')
+plt.show()
+# Calculate means
+X_mean = np.mean(X)
+Y_mean = np.mean(Y)
+numerator = 0
+denominator = 0
+for i in range(len(X)):
+    numerator += (X[i] - X_mean) * (Y[i] - Y_mean)
+    denominator += (X[i] - X_mean) ** 2
+b1 = numerator / denominator
+b0 = Y_mean - (b1 * X_mean)
+print("Slope (b1):", b1)
+print("Intercept (b0):", b0)
+print("\nLeast Square Regression Equation:")
+print("Y =", b0, "+", b1, "* X")
+predicted_glucose = b0 + b1 * age
+print("\nAge:", age)
+print("Predicted Glucose Level:", predicted_glucose)
+Y_pred = b0 + b1 * X
+plt.scatter(X, Y, label='Actual Data')
+plt.plot(X, Y_pred, color='red', label='Least Square Regression Line')
+plt.scatter(age, predicted_glucose, color='green', label=f'Prediction for Age {age}')
+plt.xlabel('Age')
+plt.ylabel('Glucose Level')
+plt.title('Least Square Regression')
+plt.legend()
+plt.show()
+
+p04.csv file :
+Age (x),Glucose level (y)
+43,99
+21,65
+25,79
+42,75
+57,87
+59,81
+55,
+
+
+#### implement k-Nearest Neighbor algorithm to classify the iris data set ####
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+import pandas as pd
+import numpy as np
+from sklearn import datasets
+iris = datasets.load_iris()
+iris_data = iris.data
+iris_labels = iris.target
+x_train, x_test, y_train, y_test = (train_test_split(iris_data, iris_labels, test_size = 0.20))
+classifier = KNeighborsClassifier(n_neighbors = 13)
+classifier.fit(x_train, y_train)
+y_pred = classifier.predict(x_test)
+print(classification_report(y_test, y_pred))
+print("confusion_matrix:\n", confusion_matrix(y_test, y_pred))
+
+
+
+
+###### classification model using clustering for the following techniques with K means clustering with Prediction, Test Score and Confusion Matrix. ####
+import os
+os.environ["LOKY_MAX_CPU_COUNT"] = "4"
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.cluster import KMeans
+from sklearn.metrics import accuracy_score, confusion_matrix
+from scipy.stats import mode
+import numpy as np
+import matplotlib.pyplot as plt
+
+iris = load_iris()
+X = iris.data
+y = iris.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+kmeans.fit(X_train)
+train_clusters = kmeans.predict(X_train)
+labels = np.zeros(3, dtype=int)
+for i in range(3):
+    mask = (train_clusters == i)
+    labels[i] = mode(y_train[mask], keepdims=True).mode[0]
+test_clusters = kmeans.predict(X_test)
+prediction = labels[test_clusters]
+score = accuracy_score(y_test, prediction)
+cm = confusion_matrix(y_test, prediction)
+print("----- K-Means Clustering -----")
+print("Prediction:", prediction)
+print("Test Score:", score)
+print("Confusion Matrix:")
+print(cm)
+plt.figure(figsize=(8, 6))
+plt.scatter(X_train[:, 0], X_train[:, 1], c=train_clusters, s=50)
+plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], marker='X', s=200, label='Centroids')
+plt.xlabel("Sepal Length")
+plt.ylabel("Sepal Width")
+plt.title("K-Means Clustering - Iris Dataset")
+plt.legend()
+plt.show()
+
+
+
+##### Hierarchical Clustering using Dendrograms ####
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
+
+iris = load_iris()
+X = iris.data
+Z = linkage(X, method='ward')
+plt.figure(figsize=(10, 6))
+dendrogram(Z, labels=iris.target, leaf_rotation=90)
+plt.title("Hierarchical Clustering Dendrogram")
+plt.xlabel("Data Points")
+plt.ylabel("Distance")
+plt.show()
+clusters = fcluster(Z, t=3, criterion='maxclust')
+print("Cluster Labels:")
+print(clusters)
+
+
+
+####Solve Cube using ML Algorithm 
+from itertools import permutations, product
+TARGET = 15
+def check(grid, include_diagonal=True):
+  
+  for i in range(0, 9, 3):
+    if sum(grid[i : i + 3]) != TARGET:
+      return False
+    
+  for i in range(3):
+    if grid[i] + grid[i + 3] + grid[i + 6] != TARGET:
+      return False
+
+  if include_diagonal:
+    if grid[0] + grid[4] + grid[8] != TARGET:
+      return False
+  return True
+
+def print_grid(arr):
+  for i in range(0, 9, 3):
+    print(f"| {arr[i]} | {arr[i+1]} | {arr[i+2]} |")
+  print("-" * 13)
+print("1. One number can be repeated")
+print("2. Specific set of numbers can be repeated")
+print("3. No number can be repeated")
+choice = int(input("Enter choice: "))
+if choice == 1:
+  num = int(input("Enter number: "))
+  grid = [num] * 9
+  if check(grid):
+    print("\nSolution:")
+    print_grid(grid)
+  else:
+    print("No valid grid possible.")
+elif choice == 2:
+  nums = list(map(int, input("Enter allowed set of numbers: ").split()))
+  count = 0
+  for grid in product(nums, repeat=9):
+    if check(grid):
+      count += 1
+      print(f"\nSolution {count}:")
+      print_grid(grid)
+      if count == 5:
+        break
+  print(f"Total solutions displayed: {count}")
+elif choice == 3:
+  nums = list(map(int, input("Enter 9 distinct numbers: ").split()))
+  limit = int(input("How many solutions do you want? "))
+  found = 0
+  for grid in permutations(nums):
+    if check(grid):
+      found += 1
+      print(f"\nSolution {found}:")
+      print_grid(grid)
+      if found == limit:
+        break
+  print(f"Total solutions displayed: {found}")
+
+else:
+  print("Invalid Choice")
+
+
+#### ABCD PRBOLEM ####
+import itertools
+digits = range(10)
+for A, B, C, D in itertools.permutations(digits, 4):
+    if A != 0 and D != 0: 
+        abcd = A * 1000 + B * 100 + C * 10 + D
+        dcba = D * 1000 + C * 100 + B * 10 + A
+        if abcd * 4 == dcba:
+            print(f"Solution Found:")
+            print(f"A = {A}, B = {B}, C = {C}, D = {D}")
+            print(f"{abcd} * 4 = {dcba}")
+ 
+
+
+ 
+
